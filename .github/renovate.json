@@ -1,0 +1,88 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits", "helpers:pinGitHubActionDigests"],
+  "timezone": "UTC",
+  "schedule": ["before 6am on monday"],
+  "labels": ["dependencies"],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 0,
+  "minimumReleaseAge": "3 days",
+  "configMigration": true,
+  "rebaseWhen": "conflicted",
+  "rangeStrategy": "bump",
+  "osvVulnerabilityAlerts": true,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on monday"]
+  },
+  "vulnerabilityAlerts": {
+    "labels": ["dependencies", "security"],
+    "schedule": ["at any time"],
+    "minimumReleaseAge": null
+  },
+  "major": {
+    "dependencyDashboardApproval": true
+  },
+  "packageRules": [
+    {
+      "description": "Dependency updates never trigger a release",
+      "matchDepTypes": [
+        "dependencies",
+        "devDependencies",
+        "optionalDependencies",
+        "peerDependencies",
+        "overrides"
+      ],
+      "semanticCommitType": "chore"
+    },
+    {
+      "description": "Vite+ CLI and its Vite build are version-locked",
+      "matchPackageNames": ["vite-plus", "@voidzero-dev/vite-plus-core", "vite"],
+      "groupName": "vite-plus"
+    },
+    {
+      "description": "Bun runtime pin and its types move together",
+      "matchDepNames": ["oven-sh/bun", "@types/bun"],
+      "groupName": "bun",
+      "semanticCommitType": "build"
+    },
+    {
+      "description": "varlock core and its plugins",
+      "matchPackageNames": ["varlock", "@varlock/**"],
+      "groupName": "varlock"
+    },
+    {
+      "description": "Action bumps are frequent and low risk; one PR is enough",
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions",
+      "semanticCommitType": "ci"
+    },
+    {
+      "description": "engines.node is a deliberate floor",
+      "matchDepTypes": ["engines"],
+      "enabled": false
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Versions declared in the Bun catalog",
+      "managerFilePatterns": ["/^package\\.json$/"],
+      "matchStringsStrategy": "recursive",
+      "matchStrings": [
+        "\"catalog\"\\s*:\\s*\\{[^}]*\\}",
+        "\"(?<depName>[^\"]+)\"\\s*:\\s*\"(?:npm:(?<packageName>.+)@)?(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "description": "Bun version pinned in devEngines.packageManager",
+      "managerFilePatterns": ["/^package\\.json$/"],
+      "matchStrings": ["\"name\":\\s*\"bun\",\\s*\"version\":\\s*\"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "oven-sh/bun",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^bun-v(?<version>.*)$"
+    }
+  ]
+}
